@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="796" Width="1024"
         WindowStyle="None"
-        AllowsTransparency="True">
+        AllowsTransparency="True"
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
@@ -61,26 +62,49 @@
                     <Image Source="Resources\redogreen_3085.png" Width="26" Height="26"/>
                 </Button>
             </ToolBar>
+            <ToolBar HorizontalAlignment="Left" Height="40">
+                <Button Click="onCompileButtonPressed">
+                    <Image Source="Resources\play_5497.png" Width="26" Height="26"/>
+                </Button>
+            </ToolBar>
         </ToolBarPanel>
         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,0" Background="#eef5fd">
             <DockPanel LastChildFill="False" Grid.Row="3" Background="#eef5fd">
-                <TabControl Grid.Row="3" DockPanel.Dock="Top" Margin="10,10,0,0" x:Name="tabControlDocs"
+                <TabControl Grid.Row="3" DockPanel.Dock="Top" Margin="10,10,0,0" 
+                            x:Name="tabControlDocs" ItemsSource="{Binding}"
                             BorderBrush="#eef5fd" Background="#eef5fd"
-                            Height="500" Width="809">
-                    <TabItem Header="New Project">
-                        <RichTextBox Grid.Row="3" DockPanel.Dock="Top"
-                                 AcceptsReturn="True" AcceptsTab="True"
-                                 BorderBrush="Black"  Margin="-3,-2,-3,-3">
-                            <FlowDocument Block.IsHyphenationEnabled="True">
-                                <Paragraph>main {
-                                    <LineBreak/>     return 0;
-                                    <LineBreak/> }
-                                </Paragraph>
-                            </FlowDocument>
-                        </RichTextBox>
-                    </TabItem>
-                    <TabItem Header="Temp Second Project">
-                    </TabItem>
+                            Height="500" Width="809"
+                            SelectionChanged="onTabControlsDocsSelectionChanged">
+                    <TabControl.Resources>
+                        <DataTemplate x:Key="TabHeader" DataType="TabItem">
+                            <DockPanel>
+                                <Button Name="buttonDelete" DockPanel.Dock="Right" 
+                                        Margin="5,0,0,0" Padding="0"
+                                        BorderThickness="0" Background="White" 
+                                        Click="onButtonDeleteClick" 
+                                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TabItem}}, Path=Name}">
+                                    <Image Source="Resources/cancel_4124.png" Height="11" Width="11"></Image>
+                                </Button>
+                                <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type TabItem}}, Path=Header}" />
+                            </DockPanel>
+                        </DataTemplate>
+                        <Style TargetType="RichTextBox">
+                            <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
+                            <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+                            <Setter Property="AcceptsReturn" Value="True"></Setter>
+                            <Setter Property="AcceptsTab" Value="True"></Setter>
+                            <Setter Property="Margin" Value="-3,-2,-3,-3"></Setter>
+                            <Setter Property="BorderBrush" Value="Black"></Setter>
+                            <Setter Property="AutoWordSelection" Value="True"></Setter>
+                            <Setter Property="IsUndoEnabled" Value="True"></Setter>
+                            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"></Setter>
+                            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"></Setter>
+                        </Style>
+                        <Style TargetType="Paragraph">
+                            <Setter Property="LineHeight" Value="5"></Setter>
+                            <Setter Property="LineStackingStrategy" Value="MaxHeight"></Setter>
+                        </Style>
+                    </TabControl.Resources>
                 </TabControl>
                 <TextBox Grid.Row="3" HorizontalAlignment="Left" VerticalAlignment="Top" DockPanel.Dock="Left" x:Name="textBoxDebug"
                      BorderBrush="Black"  Margin="10,10,0,0"  
@@ -94,16 +118,9 @@
                         <TextBlock Margin="0,0,0,0"
                                    Text="RECENT DOCUMENTS" TextAlignment="Left"/>
 
-                        <ListBox Grid.Row="3" Margin="0,10,0,10" x:Name="listBoxRecentDocs"
+                        <ListBox Grid.Row="3" x:Name="listBoxRecentDocs" ItemsSource="{Binding}"
                                   BorderBrush="#eef5fd" Background="#eef5fd"
-                                  Width="187" Height="599">
-                            <ListBoxItem>
-                                "New Project.godc"
-                            </ListBoxItem>
-                            <ListBoxItem>
-                                + "Temp Second Project.godc"
-                            </ListBoxItem>
-                        </ListBox>
+                                  Width="187" Height="599" Margin="0,10,0,10" />
                     </StackPanel>
                 </Border>
             </DockPanel>

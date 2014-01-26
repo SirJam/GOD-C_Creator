@@ -11,3 +11,16 @@ c:\users\евгений\documents\visual studio 2013\Projects\God-C Creator\God-
 c:\users\евгений\documents\visual studio 2013\Projects\God-C Creator\God-C Creator\obj\Debug\God-C Creator.csproj.GenerateResource.Cache
 c:\users\евгений\documents\visual studio 2013\Projects\God-C Creator\God-C Creator\obj\Debug\God-C Creator.exe
 c:\users\евгений\documents\visual studio 2013\Projects\God-C Creator\God-C Creator\obj\Debug\God-C Creator.pdb
+C:\Projects\GOD-C_Creator\God-C Creator\bin\Debug\God-C Creator.exe.config
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\God-C Creator.exe
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\God-C Creator.pdb
+C:\Projects\GOD-C_Creator\God-C Creator\bin\Debug\God-C Creator.exe
+C:\Projects\GOD-C_Creator\God-C Creator\bin\Debug\God-C Creator.pdb
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\God-C Creator.csprojResolveAssemblyReference.cache
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\MainWindow.baml
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\MainWindow.g.cs
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\App.g.cs
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\God-C Creator_MarkupCompile.cache
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\God-C Creator.g.resources
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\God_C_Creator.Properties.Resources.resources
+C:\Projects\GOD-C_Creator\God-C Creator\obj\Debug\God-C Creator.csproj.GenerateResource.Cache
