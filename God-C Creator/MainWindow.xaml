@@ -1,0 +1,119 @@
+﻿<Window x:Class="God_C_Creator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="796" Width="1024"
+        WindowStyle="None"
+        AllowsTransparency="True">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="40" />
+            <RowDefinition Height="666" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Grid.Row="0"
+                   Background="#f3f9fd" Opacity="100" Foreground="Black"
+                   TextWrapping="Wrap" Padding="10,5,0,0" FontSize="15" 
+                   MouseDown="onMouseDown" Width="995"><Run Text="New Project - God-C Creator"/>
+            </TextBlock>
+            <Button Width="30" Background="#f3f9fd" BorderThickness="0" Click="onExitButtonPressed">
+                <Image Source="Resources\gtk-close_2085.png" Width="26" Height="26"/>
+            </Button>
+        </StackPanel>
+        <Menu Grid.Row="1" Height="30" VerticalAlignment="Top" IsMainMenu="True" Background="#eef5fd">
+            <MenuItem Header="_File" Height="30">
+                <MenuItem Header="_New..."/>
+                <MenuItem Header="_Open..."/>
+                <MenuItem Header="_Save..."/>
+                <MenuItem Header="_Save As..."/>
+                <MenuItem Header="_Close..."/>
+                <Separator />
+                <MenuItem Header="_Exit..."/>
+            </MenuItem>
+            <MenuItem Header="_Edit" Height="30">
+                <MenuItem Header="_Cut..."/>
+                <MenuItem Header="_Copy..."/>
+                <MenuItem Header="_Paste..."/>
+            </MenuItem>
+        </Menu>
+        <ToolBarPanel Grid.Row="2" Orientation="Horizontal" Height="40" VerticalAlignment="Top" Background="#eef5fd">
+            <ToolBar HorizontalAlignment="Left" Height="40">
+                <Button Click="onNewDocumentButtonPressed">
+                    <Image Source="Resources\document-new_2429.png" Width="26" Height="26"/>
+                </Button>
+                <Button  Click="onOpenDocumentButtonPressed">
+                    <Image Source="Resources\box_open_3542.png" Width="26" Height="26"/>
+                </Button>
+                <Button  Click="onSaveDocumentButtonPressed">
+                    <Image Source="Resources\save_2770.png" Width="26" Height="26"/>
+                </Button>
+                <Button  Click="onCloseDocumentButtonPressed">
+                    <Image Source="Resources\cancel_4124.png" Width="26" Height="26"/>
+                </Button>
+            </ToolBar>
+            <ToolBar HorizontalAlignment="Left" Height="40">
+                <Button Click="onUndoButtonPressed">
+                    <Image Source="Resources\undogreen_4753.png" Width="26" Height="26"/>
+                </Button>
+                <Button Click="onRedoButtonPressed">
+                    <Image Source="Resources\redogreen_3085.png" Width="26" Height="26"/>
+                </Button>
+            </ToolBar>
+        </ToolBarPanel>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,0" Background="#eef5fd">
+            <DockPanel LastChildFill="False" Grid.Row="3" Background="#eef5fd">
+                <TabControl Grid.Row="3" DockPanel.Dock="Top" Margin="10,10,0,0" x:Name="tabControlDocs"
+                            BorderBrush="#eef5fd" Background="#eef5fd"
+                            Height="500" Width="809">
+                    <TabItem Header="New Project">
+                        <RichTextBox Grid.Row="3" DockPanel.Dock="Top"
+                                 AcceptsReturn="True" AcceptsTab="True"
+                                 BorderBrush="Black"  Margin="-3,-2,-3,-3">
+                            <FlowDocument Block.IsHyphenationEnabled="True">
+                                <Paragraph>main {
+                                    <LineBreak/>     return 0;
+                                    <LineBreak/> }
+                                </Paragraph>
+                            </FlowDocument>
+                        </RichTextBox>
+                    </TabItem>
+                    <TabItem Header="Temp Second Project">
+                    </TabItem>
+                </TabControl>
+                <TextBox Grid.Row="3" HorizontalAlignment="Left" VerticalAlignment="Top" DockPanel.Dock="Left" x:Name="textBoxDebug"
+                     BorderBrush="Black"  Margin="10,10,0,0"  
+                     TextWrapping="Wrap" Text="Debug Window" IsReadOnly="True"
+                     Height="136" Width="809"/>
+            </DockPanel>
+            <DockPanel LastChildFill="False" Grid.Row="3" Background="#eef5fd">
+                <Border Margin="10,30,10,10"
+                        BorderBrush="Black" BorderThickness="0">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Margin="0,0,0,0"
+                                   Text="RECENT DOCUMENTS" TextAlignment="Left"/>
+
+                        <ListBox Grid.Row="3" Margin="0,10,0,10" x:Name="listBoxRecentDocs"
+                                  BorderBrush="#eef5fd" Background="#eef5fd"
+                                  Width="187" Height="599">
+                            <ListBoxItem>
+                                "New Project.godc"
+                            </ListBoxItem>
+                            <ListBoxItem>
+                                + "Temp Second Project.godc"
+                            </ListBoxItem>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+            </DockPanel>
+        </StackPanel>
+
+
+        <TextBox Grid.Row="4" VerticalContentAlignment="Center" 
+                     Background="#007acc" Foreground="White"
+                     TextWrapping="Wrap" Text="Ready" Padding="10,0,0,2" FontSize="15" IsReadOnly="True"
+                     Height="30"
+                     DockPanel.Dock="Top"/>
+    </Grid>
+</Window>
