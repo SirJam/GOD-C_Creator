@@ -24,14 +24,14 @@
             </Button>
         </StackPanel>
         <Menu Grid.Row="1" Height="30" VerticalAlignment="Top" IsMainMenu="True" Background="#eef5fd">
-            <MenuItem Header="_File" Height="30">
-                <MenuItem Header="_New..."/>
-                <MenuItem Header="_Open..."/>
-                <MenuItem Header="_Save..."/>
-                <MenuItem Header="_Save As..."/>
-                <MenuItem Header="_Close..."/>
+            <MenuItem Header="_File" Height="30" Background="#eef5fd">
+                <MenuItem Header="_New..." Click="onNewDocumentButtonPressed"/>
+                <MenuItem Header="_Open..." Click="onOpenDocumentButtonPressed"/>
+                <MenuItem Header="_Save..." Click="onSaveDocumentButtonPressed"/>
+                <MenuItem Header="_Save As..." Click="onSaveDocumentButtonPressed"/>
+                <MenuItem Header="_Close..." Click="onCloseDocumentButtonPressed"/>
                 <Separator />
-                <MenuItem Header="_Exit..."/>
+                <MenuItem Header="_Exit..." Click="onExitButtonPressed"/>
             </MenuItem>
             <MenuItem Header="_Edit" Height="30">
                 <MenuItem Header="_Cut..."/>

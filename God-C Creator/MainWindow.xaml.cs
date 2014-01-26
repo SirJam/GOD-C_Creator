@@ -42,7 +42,6 @@ namespace God_C_Creator
 
         private string _currentProject;
 
-
         public MainWindow()
         {
             try
@@ -78,10 +77,10 @@ namespace God_C_Creator
 
 
         //==================WORKING WITH TAB ITEMS===================
-
+        #region Tabs
         private string GenerateStartProgram()
         {
-            return "main\n{\n\treturn 0;\n}";
+            return "main \n{\n\x9return 0;\n}";
         }
         private string GetTextFromCurrentTab()
         {
@@ -118,10 +117,14 @@ namespace God_C_Creator
 
             // add controls to tab item, this case I added just a textbox
             RichTextBox richTextBox = new RichTextBox();
+            richTextBox.AcceptsReturn = true;
+            richTextBox.AcceptsTab = true;
             richTextBox.Name = "godc";
             richTextBox.AppendText(this._currentProject);
             richTextBox.Tag = count;
             richTextBox.TextChanged += onRichTextBoxTextChanged;
+            Colorizer.Colorize(richTextBox, this);
+            ReplaceTabCaharactersOnRichTextBox(richTextBox);
             tab.Content = richTextBox;
             this._lastTabItem = tab;
 
@@ -160,14 +163,27 @@ namespace God_C_Creator
                 }
             }
         }
-        private void onButtonDeleteClick(object sender, RoutedEventArgs e)
+
+        private const string TAB_PLACEHOLDER = "===TAB===";
+        private void ReplaceTabCaharactersOnRichTextBox(RichTextBox richTextBox)
         {
-            string tabName = (sender as Button).CommandParameter.ToString();
+          /*  string xaml = richTextBox.;
 
-            var item = this.tabControlDocs.Items.Cast<TabItem>().Where(i => i.Name.Equals(tabName)).SingleOrDefault();
+            xaml = xaml.Replace(TAB, TAB_PLACEHOLDER);
 
-            TabItem tab = item as TabItem;
+            richTextBox2.Xaml = xaml;
 
+            foreach (Block block in richTextBox2.Blocks)
+            {
+                foreach (Inline inline in ((Paragraph)block).Inlines)
+                {
+                    ((Run)inline).Text = ((Run)inline).Text.Replace(TAB_PLACEHOLDER, TAB);
+                }
+            }*/
+        }
+
+        private void CloseTabAndDocument(TabItem tab)
+        {
             if (tab != null)
             {
                 if (_tabItems.Count < 3)
@@ -197,11 +213,14 @@ namespace God_C_Creator
                 }
             }
         }
+        #endregion
 
         //ACTIONS
-        private void onRichTextBoxTextChanged(object sender, TextChangedEventArgs e)
+        #region Actions
+        public void onRichTextBoxTextChanged(object sender, TextChangedEventArgs e)
         {
             this._currentProject = GetTextFromCurrentTab();
+            Colorizer.Colorize((RichTextBox)this._lastTabItem.Content, this);
         }
         private void onUndoButtonPressed(object sender, RoutedEventArgs e)
         {
@@ -266,6 +285,7 @@ namespace God_C_Creator
                     if (!IsTabWithExistWithName(fileName))
                     {
                         CreateNewTabeWithName(fileName);
+                        Colorizer.Colorize((RichTextBox)this._lastTabItem.Content, this);
                     }
                     else
                     {
@@ -305,13 +325,23 @@ namespace God_C_Creator
 
         private void onCloseDocumentButtonPressed(object sender, RoutedEventArgs e)
         {
-            
+            CloseTabAndDocument(this._lastTabItem);
         }
 
         private void onCompileButtonPressed(object sender, RoutedEventArgs e)
         {
 
         }
+        private void onButtonDeleteClick(object sender, RoutedEventArgs e)
+        {
+            string tabName = (sender as Button).CommandParameter.ToString();
 
+            var item = this.tabControlDocs.Items.Cast<TabItem>().Where(i => i.Name.Equals(tabName)).SingleOrDefault();
+
+            TabItem tab = item as TabItem;
+
+            CloseTabAndDocument(tab);
+        }
+        #endregion
     }
 }
