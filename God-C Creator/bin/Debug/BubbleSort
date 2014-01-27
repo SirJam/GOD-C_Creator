@@ -1,0 +1,47 @@
+main 
+{
+    int[10] arr;
+    int a, b, c;
+    a = 0;
+    b = 0;
+    c = 0;
+    arr[0] = 4;
+    arr[1] = 2;
+    arr[2] = 7;
+    arr[3] = 1;
+    arr[4] = 9;
+    arr[5] = 6;
+    arr[6] = 8;
+    arr[7] = 5;
+    arr[8] = 3;
+    arr[9] = 0;
+    while (a < 9)
+    {
+        while (b < 10 - a)
+        {
+            if (b < 9)
+            {
+                if (arr[b] > arr[b + 1])
+                {
+                    c = arr[b];
+                    arr[b] = arr[b + 1];
+                    arr[b + 1] = c;
+                }
+            }
+            b = b + 1;
+        }
+        b = 0;
+        a = a + 1;
+    }
+    a = 0;
+    while (a < 10)
+    {
+        write(arr[a]);
+        a = a + 1;
+    } 
+    read(a);
+    return 0;
+}
+
+
+

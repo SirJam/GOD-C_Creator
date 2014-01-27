@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO.Pipes;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Windows.Threading;
+using System.Windows;
+using System.Drawing;
+using System.Windows.Media;
 
 public delegate void DelegateMessage(string Reply);
 
@@ -13,84 +19,85 @@ namespace God_C_Creator
 {
     class Receiver
     {
-        MainWindow mW;
-        string _pipeName = "god_c_creator_pipe";
-        public event DelegateMessage PipeMessage;
+        static public MainWindow mW;
+        private static TcpListener tcpListener;
+        private static Thread listenThread;
 
         public Receiver(MainWindow mainWindow)
         {
-            this.mW = mainWindow;
+            mW = mainWindow;
         }
         public void StartListening()
         {
-            try
-            {
-                NamedPipeServerStream pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
-
-                pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionCallBack), pipeServer);
-            }
-            catch (Exception oEX)
-            {
-                this.mW.textBoxDebug.Text += '\n' + oEX.Message;
-            }
+            tcpListener = new TcpListener(IPAddress.Any, 3000);
+            listenThread = new Thread(new ThreadStart(ListenForClients));
+            listenThread.Start();
         }
-        private void WaitForConnectionCallBack(IAsyncResult iar)
+        static void ListenForClients()
         {
-            try
+            tcpListener.Start();
+
+            while (true)
             {
-                // Get the pipe
-                NamedPipeServerStream pipeServer = (NamedPipeServerStream)iar.AsyncState;
-                // End waiting for the connection
-                pipeServer.EndWaitForConnection(iar);
-
-                byte[] buffer = new byte[255];
-
-                // Read the incoming message
-                pipeServer.Read(buffer, 0, 255);
-
-                // Convert byte buffer to string
-                string stringData = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
-
-                this.mW.textBoxDebug.Text += stringData;
-
-                // Pass message back to calling form
-                PipeMessage.Invoke(stringData);
-
-                // Kill original server and create new wait server
-                pipeServer.Close();
-                pipeServer = null;
-                pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
-
-                // Recursively wait for the connection again and again....
-                pipeServer.BeginWaitForConnection(new AsyncCallback(WaitForConnectionCallBack), pipeServer);
-            }
-            catch
-            {
-                return;
-            }
-        }
-
-        public void MainFunc(object pipe)
-        {
-            NamedPipeServerStream m_server = (NamedPipeServerStream)pipe;
-            try
-            {
-                StreamReader reader = new StreamReader(m_server);
-                string line;
-
-                while (true)
+                try
                 {
-                    Mutex m = new Mutex();
-                    m.WaitOne();
-                    line = reader.ReadLine();
-                    this.mW.textBoxDebug.Text += line;
-                    m.ReleaseMutex();
+                    TcpClient client = tcpListener.AcceptTcpClient();
+
+                    Thread clientThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
+                    clientThread.Start(client);
+                }
+                catch
+                {
+                    return;
                 }
             }
-            catch
-            {
+        }
+        static void HandleClientComm(object client)
+        {
+            TcpClient tcpClient = (TcpClient)client;
+            NetworkStream clientStream = tcpClient.GetStream();
 
+            byte[] message = new byte[1024];
+            int bytesRead;
+            while (true)
+            {
+                try
+                {
+                    bytesRead = clientStream.Read(message, 0, 1024);
+                    string acceptedMessage = null;
+
+                    acceptedMessage = Encoding.UTF8.GetString(message, 0, bytesRead);
+                    if (acceptedMessage.IndexOf("Error") == 0)
+                    {
+                        tcpListener.Stop();
+                        mW.isDebugError = true;
+                        SendMessageToTextBox(acceptedMessage);
+                        return;
+                    }
+                    else
+                    {
+                        mW.isDebugError = false;
+                    }
+                    SendMessageToTextBox(acceptedMessage);
+                }
+                catch
+                {
+                    tcpListener.Stop();
+                    return;
+                }
             }
+        }
+        static void SendMessageToTextBox(string message)
+        {
+            Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                mW.textBoxDebug.Text += message;
+                if (mW.isDebugError)
+                {
+                    mW.textBoxStatus.Text = "Build error!";
+                    mW.textBoxStatus.Background = new SolidColorBrush(Color.FromRgb(196, 0, 5));
+                }
+            }));
         }
     }
 }

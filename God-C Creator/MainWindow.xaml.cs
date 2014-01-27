@@ -38,6 +38,8 @@ namespace God_C_Creator
         //=======================================================
 
         private Receiver receiver;
+        static string AppName = "God-C Creator";
+        public bool isDebugError = false;
 
         private int braceFactor = 0;
         private List<TabItem> _tabItems;
@@ -138,6 +140,9 @@ namespace God_C_Creator
             Colorizer.Colorize(richTextBox, this);
             tab.Content = richTextBox;
             this._lastTabItem = tab;
+            this._currentName = tab.Name;
+
+            this.textBoxDebug.Text += tab.Name + " opened!\n";
 
             // insert tab item right before the last (+) tab item
             this._tabItems.Insert(count - 1, tab);
@@ -172,6 +177,7 @@ namespace God_C_Creator
                     this._currentProject = GetTextFromCurrentTab();
                     // your code here...
                 }
+                this.textBoxProjectTitle.Text = String.Format("{0} - {1}", this._lastTabItem.Name, AppName);
             }
         }
 
@@ -214,6 +220,7 @@ namespace God_C_Creator
         {
             this._currentProject = GetTextFromCurrentTab();
             Colorizer.Colorize((RichTextBox)this._lastTabItem.Content, this);
+            SetupStatusBar();
         }
         public void onRichTextBoxKeyDown(object sender, KeyEventArgs e)
         {
@@ -355,6 +362,7 @@ namespace God_C_Creator
         private void onCompileButtonPressed(object sender, RoutedEventArgs e)
         {
             this.receiver.StartListening();
+            this.textBoxDebug.Text += "Debugging...\n";
             this.textBoxStatus.Text = "Building...";
             this.textBoxStatus.Background = new SolidColorBrush(Color.FromRgb(202, 81, 0));
 
@@ -369,22 +377,28 @@ namespace God_C_Creator
 
             proc1.WaitForExit();
 
-            _executionProcess.StartInfo.FileName = this._lastTabItem.Name + ".exe";
-            _executionProcess.StartInfo.Arguments = "";
-            _executionProcess.EnableRaisingEvents = true;
-            _executionProcess.Exited += new EventHandler(myProcess_Exited);
-            _executionProcess.Start();
-            this.textBoxStatus.Text = "Running...";
-
+            if (!this.isDebugError)
+            {
+                _executionProcess.StartInfo.FileName = this._lastTabItem.Name + ".exe";
+                _executionProcess.StartInfo.Arguments = "";
+                _executionProcess.EnableRaisingEvents = true;
+                _executionProcess.Exited += new EventHandler(myProcess_Exited);
+                _executionProcess.Start();
+                this.textBoxStatus.Text = "Running...";
+            }
+        }
+        private void SetupStatusBar()
+        {
+            this.textBoxStatus.Text = "Ready";
+            this.textBoxStatus.Background = new SolidColorBrush(Color.FromRgb(0, 122, 204));
         }
         private void myProcess_Exited(object sender, System.EventArgs e)
         {
             Dispatcher.Invoke((Action)delegate()
             {
-                this.textBoxStatus.Text = "Ready";
-                this.textBoxStatus.Background = new SolidColorBrush(Color.FromRgb(0, 122, 204));
+                SetupStatusBar();
+                this.textBoxDebug.Text += this._currentName + " exited.\n";
             });
-
         }
 
         private void onButtonDeleteClick(object sender, RoutedEventArgs e)
@@ -398,5 +412,10 @@ namespace God_C_Creator
             CloseTabAndDocument(tab);
         }
         #endregion
+
+        private void onTextBoxDebug_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ((TextBox)sender).ScrollToEnd();
+        }
     }
 }
