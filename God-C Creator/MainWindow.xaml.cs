@@ -38,9 +38,10 @@ namespace God_C_Creator
         //=======================================================
         static string AppName = "God-C Creator";
 
-        private Receiver receiver;
-        private FileManager fileManager = new FileManager();
-        Process _executionProcess = new Process();
+        private Receiver _receiver;
+        private FileManager _fileManager = new FileManager();
+        private Process _executionProcess = new Process();
+        private DocumentsManager _docManager = new DocumentsManager();
 
         public bool isDebugError = false;
 
@@ -58,7 +59,7 @@ namespace God_C_Creator
             {
                 InitializeComponent();
 
-                receiver = new Receiver(this);
+                this._receiver = new Receiver(this);
                 this._addTabHeader = "+";
                 // initialize tabItem array
                 this._tabItems = new List<TabItem>();
@@ -79,6 +80,7 @@ namespace God_C_Creator
                 this.tabControlDocs.DataContext = this._tabItems;
 
                 this.tabControlDocs.SelectedIndex = 0;
+                this.listBoxRecentDocs.ItemsSource = this._docManager.GetDocuments();
             }
             catch (Exception ex)
             {
@@ -150,6 +152,26 @@ namespace God_C_Creator
             this._tabItems.Insert(count - 1, tab);
             return tab;
         }
+        private string CheckExistingOfNameAndSetNew(string name)
+        {
+            bool isExist = false;
+            foreach (TabItem tabItem in this._tabItems)
+            {
+                if (tabItem.Name == name)
+                {
+                    isExist = true;
+                    break;
+                }
+            }
+            if (isExist)
+            {
+                return CheckExistingOfNameAndSetNew(name + "copy");
+            }
+            else
+            {
+                return name;
+            }
+        }
         private void onTabControlsDocsSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             TabItem tab = this.tabControlDocs.SelectedItem as TabItem;
@@ -163,7 +185,7 @@ namespace God_C_Creator
 
                     // add new tab
                     int count = this._tabItems.Count;
-                    string name = string.Format("Document{0}", count);
+                    string name = CheckExistingOfNameAndSetNew(string.Format("Document{0}", count));
                     this._currentProject = GenerateStartProgram();
                     TabItem newTab = this.AddTabItemWithName(name);
 
@@ -360,11 +382,11 @@ namespace God_C_Creator
 
         private void onCompileButtonPressed(object sender, RoutedEventArgs e)
         {
-            string path2 = this.fileManager.AppFolder + "\\" + this._currentName;
+            string path2 = this._fileManager.AppFolder + "\\" + this._currentName;
 
-            this.fileManager.DeleteFolderAtPath(path2);
+            this._fileManager.DeleteFolderAtPath(path2);
 
-            this.receiver.StartListening();
+            this._receiver.StartListening();
             this.textBoxDebug.Text += "Debugging...\n";
             this.textBoxStatus.Text = "Building...";
             this.textBoxStatus.Background = new SolidColorBrush(Color.FromRgb(202, 81, 0));
@@ -383,7 +405,7 @@ namespace God_C_Creator
 
             proc1.WaitForExit();
 
-            this.fileManager.CreateFolderForCurrentProjectAtPath(path2);
+            this._fileManager.CreateFolderForCurrentProjectAtPath(path2);
 
             if (!this.isDebugError)
             {
@@ -394,6 +416,11 @@ namespace God_C_Creator
                 _executionProcess.Start();
                 this.textBoxStatus.Text = "Running...";
             }
+            else
+            {
+                this._fileManager.MoveFilesToHisDirectory(this._currentName);
+            }
+            this.listBoxRecentDocs.ItemsSource = this._docManager.GetDocuments();
         }
         private void SetupStatusBar()
         {
@@ -407,7 +434,7 @@ namespace God_C_Creator
                 SetupStatusBar();
                 this.textBoxDebug.Text += this._currentName + " exited.\n";
             });
-            this.fileManager.MoveFilesToHisDirectory(this._currentName);
+            this._fileManager.MoveFilesToHisDirectory(this._currentName);
         }
 
         private void onButtonDeleteClick(object sender, RoutedEventArgs e)
@@ -420,11 +447,41 @@ namespace God_C_Creator
 
             CloseTabAndDocument(tab);
         }
-        #endregion
 
         private void onTextBoxDebug_TextChanged(object sender, TextChangedEventArgs e)
         {
             ((TextBox)sender).ScrollToEnd();
         }
+
+        private void onListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            RecentDocument recDoc = this.listBoxRecentDocs.SelectedItem as RecentDocument;
+            if (recDoc != null)
+            {
+                string name = recDoc.Name.Substring(0, recDoc.Name.IndexOf(".", 0));
+                if (!IsTabWithExistWithName(name))
+                {
+                    if (MessageBox.Show(string.Format("Do you want to open '{0}'?", recDoc.Name),
+                       "Opening document", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                    {
+                        if (File.Exists(recDoc.Path))
+                        {
+                            this._currentProject = File.ReadAllText(recDoc.Path);
+                            CreateNewTabeWithName(name);
+                        }
+                        else
+                        {
+                            MessageBox.Show("File is not exist! Reopen IDE!");
+                        }
+                    }
+                }
+                else
+                {
+                    this.tabControlDocs.SelectedItem = this._tabItems.First(item => item.Name == name);
+                }
+            }
+        }
+
+        #endregion
     }
 }
