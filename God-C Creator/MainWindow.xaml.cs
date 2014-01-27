@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,6 +17,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.IO;
+using System.Diagnostics;
 
 namespace God_C_Creator
 {
@@ -35,12 +37,16 @@ namespace God_C_Creator
         public static extern bool ReleaseCapture();
         //=======================================================
 
+        private Receiver receiver;
 
+        private int braceFactor = 0;
         private List<TabItem> _tabItems;
         private TabItem _lastTabItem;
         private string _addTabHeader;
 
         private string _currentProject;
+        private string _currentName;
+        Process _executionProcess = new Process();
 
         public MainWindow()
         {
@@ -48,6 +54,7 @@ namespace God_C_Creator
             {
                 InitializeComponent();
 
+                receiver = new Receiver(this);
                 this._addTabHeader = "+";
                 // initialize tabItem array
                 this._tabItems = new List<TabItem>();
@@ -80,7 +87,7 @@ namespace God_C_Creator
         #region Tabs
         private string GenerateStartProgram()
         {
-            return "main \n{\n\x9return 0;\n}";
+            return "main \n{\n        return 0;\n}";
         }
         private string GetTextFromCurrentTab()
         {
@@ -117,14 +124,18 @@ namespace God_C_Creator
 
             // add controls to tab item, this case I added just a textbox
             RichTextBox richTextBox = new RichTextBox();
-            richTextBox.AcceptsReturn = true;
-            richTextBox.AcceptsTab = true;
+
+            richTextBox.AcceptsReturn = false;
+            richTextBox.AcceptsTab = false;
+
             richTextBox.Name = "godc";
             richTextBox.AppendText(this._currentProject);
             richTextBox.Tag = count;
+
             richTextBox.TextChanged += onRichTextBoxTextChanged;
+            richTextBox.KeyDown += onRichTextBoxKeyDown;
+
             Colorizer.Colorize(richTextBox, this);
-            ReplaceTabCaharactersOnRichTextBox(richTextBox);
             tab.Content = richTextBox;
             this._lastTabItem = tab;
 
@@ -162,24 +173,6 @@ namespace God_C_Creator
                     // your code here...
                 }
             }
-        }
-
-        private const string TAB_PLACEHOLDER = "===TAB===";
-        private void ReplaceTabCaharactersOnRichTextBox(RichTextBox richTextBox)
-        {
-          /*  string xaml = richTextBox.;
-
-            xaml = xaml.Replace(TAB, TAB_PLACEHOLDER);
-
-            richTextBox2.Xaml = xaml;
-
-            foreach (Block block in richTextBox2.Blocks)
-            {
-                foreach (Inline inline in ((Paragraph)block).Inlines)
-                {
-                    ((Run)inline).Text = ((Run)inline).Text.Replace(TAB_PLACEHOLDER, TAB);
-                }
-            }*/
         }
 
         private void CloseTabAndDocument(TabItem tab)
@@ -222,6 +215,30 @@ namespace God_C_Creator
             this._currentProject = GetTextFromCurrentTab();
             Colorizer.Colorize((RichTextBox)this._lastTabItem.Content, this);
         }
+        public void onRichTextBoxKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Tab)
+            {
+                e.Handled = true;
+                ((RichTextBox)this._lastTabItem.Content).Selection.Text = new string(' ', 8);
+                ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.End, ((RichTextBox)this._lastTabItem.Content).Selection.End);
+            } 
+            else if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.Start, ((RichTextBox)this._lastTabItem.Content).Selection.End);
+                ((RichTextBox)this._lastTabItem.Content).Selection.Text = "";
+                ((RichTextBox)this._lastTabItem.Content).Selection.Text += ' ';
+                ((RichTextBox)this._lastTabItem.Content).Selection.Text += '\n';
+                ((RichTextBox)this._lastTabItem.Content).Selection.Text += new string(' ', 8);
+                ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.End, ((RichTextBox)this._lastTabItem.Content).Selection.End);
+            }
+            else if (e.Key == Key.OemOpenBrackets && Keyboard.Modifiers == ModifierKeys.Shift)
+            {
+                ((RichTextBox)this._lastTabItem.Content).Selection.Text += '\n';
+                ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.End, ((RichTextBox)this._lastTabItem.Content).Selection.End);
+            }
+        }
         private void onUndoButtonPressed(object sender, RoutedEventArgs e)
         {
             ((RichTextBox)this._lastTabItem.Content).Undo();
@@ -262,6 +279,7 @@ namespace God_C_Creator
             Microsoft.Win32.OpenFileDialog openFileDialog1 = new Microsoft.Win32.OpenFileDialog();
 
             // Set filter options and filter index.
+            openFileDialog1.InitialDirectory = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             openFileDialog1.Filter = "God-C files (.godc)|*.godc|All Files (*.*)|*.*";
             openFileDialog1.FilterIndex = 1;
 
@@ -299,7 +317,9 @@ namespace God_C_Creator
         private void onSaveDocumentButtonPressed(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.InitialDirectory = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
             dlg.FileName = this._lastTabItem.Name; // Default file name
+            this._currentName = this._lastTabItem.Name;
             dlg.DefaultExt = ".godc"; // Default file extension
             dlg.Filter = "Text documents (.godc)|*.godc"; // Filter files by extension
 
@@ -313,6 +333,10 @@ namespace God_C_Creator
                 StreamWriter file = new StreamWriter(dlg.OpenFile());
                 file.WriteLine(this._currentProject);
                 file.Close();
+
+                this._currentName = dlg.SafeFileName.Substring(0, dlg.SafeFileName.IndexOf(".", 0));
+                this._lastTabItem.Header = this._currentName;
+                this._lastTabItem.Name = this._currentName;
             }
         }
 
@@ -330,8 +354,39 @@ namespace God_C_Creator
 
         private void onCompileButtonPressed(object sender, RoutedEventArgs e)
         {
+            this.receiver.StartListening();
+            this.textBoxStatus.Text = "Building...";
+            this.textBoxStatus.Background = new SolidColorBrush(Color.FromRgb(202, 81, 0));
+
+            StreamWriter file = new StreamWriter(this._lastTabItem.Name);
+            file.WriteLine(this._currentProject);
+            file.Close();
+
+            Process proc1 = new Process();
+            proc1.StartInfo.FileName = @"HLParser.exe";
+            proc1.StartInfo.Arguments = this._lastTabItem.Name;
+            proc1.Start();
+
+            proc1.WaitForExit();
+
+            _executionProcess.StartInfo.FileName = this._lastTabItem.Name + ".exe";
+            _executionProcess.StartInfo.Arguments = "";
+            _executionProcess.EnableRaisingEvents = true;
+            _executionProcess.Exited += new EventHandler(myProcess_Exited);
+            _executionProcess.Start();
+            this.textBoxStatus.Text = "Running...";
 
         }
+        private void myProcess_Exited(object sender, System.EventArgs e)
+        {
+            Dispatcher.Invoke((Action)delegate()
+            {
+                this.textBoxStatus.Text = "Ready";
+                this.textBoxStatus.Background = new SolidColorBrush(Color.FromRgb(0, 122, 204));
+            });
+
+        }
+
         private void onButtonDeleteClick(object sender, RoutedEventArgs e)
         {
             string tabName = (sender as Button).CommandParameter.ToString();

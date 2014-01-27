@@ -17,6 +17,8 @@ namespace God_C_Creator
                 "bool",
                 "write",
                 "read",
+                "if",
+                "while",
                 "return",
                 "TRUE",
                 "FALSE"

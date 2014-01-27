@@ -127,7 +127,7 @@
         </StackPanel>
 
 
-        <TextBox Grid.Row="4" VerticalContentAlignment="Center" 
+        <TextBox Grid.Row="4" VerticalContentAlignment="Center" x:Name="textBoxStatus"
                      Background="#007acc" Foreground="White"
                      TextWrapping="Wrap" Text="Ready" Padding="10,0,0,2" FontSize="15" IsReadOnly="True"
                      Height="30"
