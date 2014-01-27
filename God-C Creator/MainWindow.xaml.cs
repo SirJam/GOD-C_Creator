@@ -36,9 +36,12 @@ namespace God_C_Creator
         [DllImportAttribute("user32.dll")]
         public static extern bool ReleaseCapture();
         //=======================================================
+        static string AppName = "God-C Creator";
 
         private Receiver receiver;
-        static string AppName = "God-C Creator";
+        private FileManager fileManager = new FileManager();
+        Process _executionProcess = new Process();
+
         public bool isDebugError = false;
 
         private int braceFactor = 0;
@@ -48,7 +51,6 @@ namespace God_C_Creator
 
         private string _currentProject;
         private string _currentName;
-        Process _executionProcess = new Process();
 
         public MainWindow()
         {
@@ -234,10 +236,7 @@ namespace God_C_Creator
             {
                 e.Handled = true;
                 ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.Start, ((RichTextBox)this._lastTabItem.Content).Selection.End);
-                ((RichTextBox)this._lastTabItem.Content).Selection.Text = "";
-                ((RichTextBox)this._lastTabItem.Content).Selection.Text += ' ';
-                ((RichTextBox)this._lastTabItem.Content).Selection.Text += '\n';
-                ((RichTextBox)this._lastTabItem.Content).Selection.Text += new string(' ', 8);
+                ((RichTextBox)this._lastTabItem.Content).Selection.Text = "" + ' ' + '\n' + new string(' ', 8);
                 ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.End, ((RichTextBox)this._lastTabItem.Content).Selection.End);
             }
             else if (e.Key == Key.OemOpenBrackets && Keyboard.Modifiers == ModifierKeys.Shift)
@@ -361,6 +360,10 @@ namespace God_C_Creator
 
         private void onCompileButtonPressed(object sender, RoutedEventArgs e)
         {
+            string path2 = this.fileManager.AppFolder + "\\" + this._currentName;
+
+            this.fileManager.DeleteFolderAtPath(path2);
+
             this.receiver.StartListening();
             this.textBoxDebug.Text += "Debugging...\n";
             this.textBoxStatus.Text = "Building...";
@@ -369,6 +372,9 @@ namespace God_C_Creator
             StreamWriter file = new StreamWriter(this._lastTabItem.Name);
             file.WriteLine(this._currentProject);
             file.Close();
+            StreamWriter source = new StreamWriter(this._lastTabItem.Name + ".godc");
+            source.WriteLine(this._currentProject);
+            source.Close();
 
             Process proc1 = new Process();
             proc1.StartInfo.FileName = @"HLParser.exe";
@@ -376,6 +382,8 @@ namespace God_C_Creator
             proc1.Start();
 
             proc1.WaitForExit();
+
+            this.fileManager.CreateFolderForCurrentProjectAtPath(path2);
 
             if (!this.isDebugError)
             {
@@ -399,6 +407,7 @@ namespace God_C_Creator
                 SetupStatusBar();
                 this.textBoxDebug.Text += this._currentName + " exited.\n";
             });
+            this.fileManager.MoveFilesToHisDirectory(this._currentName);
         }
 
         private void onButtonDeleteClick(object sender, RoutedEventArgs e)
