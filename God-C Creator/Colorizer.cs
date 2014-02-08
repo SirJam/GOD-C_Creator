@@ -47,6 +47,7 @@ namespace God_C_Creator
 
         }
         static public List<Tag> m_tags = new List<Tag>();
+        static public List<Tag> m_symbols = new List<Tag>();
         static public void Format(RichTextBox textBox, MainWindow mainWindow)
         {
             textBox.TextChanged -= mainWindow.onRichTextBoxTextChanged;
@@ -58,6 +59,13 @@ namespace God_C_Creator
                 range.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Bold);
             }
             m_tags.Clear();
+            for (int i = 0; i < m_symbols.Count; i++)
+            {
+                TextRange range = new TextRange(m_symbols[i].StartPosition, m_symbols[i].EndPosition);
+                range.ApplyPropertyValue(TextElement.ForegroundProperty, new SolidColorBrush(Color.FromRgb(30, 124, 112)));
+                range.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Bold);
+            }
+            m_symbols.Clear();
 
             textBox.TextChanged += mainWindow.onRichTextBoxTextChanged;
         }
@@ -65,9 +73,12 @@ namespace God_C_Creator
         static public void CheckWordsInRun(Run run)
         {
             string text = run.Text;
+            string buffer = "";
 
             int sIndex = 0;
             int eIndex = 0;
+
+
             for (int i = 0; i < text.Length; i++)
             {
                 if (Char.IsWhiteSpace(text[i]) | GOD_C_SyntaxProvider.GetSpecials.Contains(text[i]))
@@ -86,11 +97,12 @@ namespace God_C_Creator
                             m_tags.Add(t);
                         }
                     }
+
                     sIndex = i + 1;
                 }
             }
 
-            string lastWord = text.Substring(sIndex, text.Length - sIndex);
+            string lastWord = text.Length == 1 ? text.Substring(0, 1) : text.Substring(sIndex, text.Length - sIndex);
             if (GOD_C_SyntaxProvider.IsKnownTag(lastWord))
             {
                 Tag t = new Tag();
@@ -98,7 +110,7 @@ namespace God_C_Creator
                 t.EndPosition = run.ContentStart.GetPositionAtOffset(eIndex + 1, LogicalDirection.Backward);
                 t.Word = lastWord;
                 m_tags.Add(t);
-            }
+            } 
         }
     }
 }

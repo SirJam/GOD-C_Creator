@@ -45,7 +45,6 @@ namespace God_C_Creator
 
         public bool isDebugError = false;
 
-        private int braceFactor = 0;
         private List<TabItem> _tabItems;
         private TabItem _lastTabItem;
         private string _addTabHeader;
@@ -238,6 +237,38 @@ namespace God_C_Creator
         }
         #endregion
 
+        #region Utility
+        private int GetFactor()
+        {
+            TextPointer start = ((RichTextBox)this._lastTabItem.Content).Document.ContentStart;
+            TextPointer caret = ((RichTextBox)this._lastTabItem.Content).CaretPosition;
+            TextRange range = new TextRange(start, caret);
+            int indexInText = range.Text.Length;
+            int braceFactor = 0;
+
+            for (int i = 0; i < indexInText; i++)
+            {
+                char ch = this._currentProject.ElementAt(i);
+                if (ch == '{')
+                {
+                    braceFactor += 1;
+                }
+                else if (ch == '}')
+                {
+                    braceFactor -= 1;
+                }
+            }
+            return braceFactor *= 8;
+        }
+
+        public void WriteBracketByFactor(int factor)
+        {
+            ((RichTextBox)this._lastTabItem.Content).Selection.Text += '\n';
+            ((RichTextBox)this._lastTabItem.Content).Selection.Text += new string(' ', factor);
+            ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.End, ((RichTextBox)this._lastTabItem.Content).Selection.End);
+        }
+        #endregion
+
         //ACTIONS
         #region Actions
         public void onRichTextBoxTextChanged(object sender, TextChangedEventArgs e)
@@ -251,22 +282,27 @@ namespace God_C_Creator
             if (e.Key == Key.Tab)
             {
                 e.Handled = true;
-                ((RichTextBox)this._lastTabItem.Content).Selection.Text = new string(' ', 8);
+                ((RichTextBox)this._lastTabItem.Content).Selection.Text = new string(' ', GetFactor());
                 ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.End, ((RichTextBox)this._lastTabItem.Content).Selection.End);
             } 
             else if (e.Key == Key.Enter)
             {
                 e.Handled = true;
                 ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.Start, ((RichTextBox)this._lastTabItem.Content).Selection.End);
-                ((RichTextBox)this._lastTabItem.Content).Selection.Text = "" + ' ' + '\n' + new string(' ', 8);
+
+                ((RichTextBox)this._lastTabItem.Content).Selection.Text = "" + ' ' + '\n' + new string(' ', GetFactor());
                 ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.End, ((RichTextBox)this._lastTabItem.Content).Selection.End);
             }
             else if (e.Key == Key.OemOpenBrackets && Keyboard.Modifiers == ModifierKeys.Shift)
             {
-                ((RichTextBox)this._lastTabItem.Content).Selection.Text += '\n';
-                ((RichTextBox)this._lastTabItem.Content).Selection.Select(((RichTextBox)this._lastTabItem.Content).Selection.End, ((RichTextBox)this._lastTabItem.Content).Selection.End);
+                WriteBracketByFactor(GetFactor());
+            }
+            else if (e.Key == Key.OemCloseBrackets && Keyboard.Modifiers == ModifierKeys.Shift)
+            {
+                WriteBracketByFactor(GetFactor() - 8);
             }
         }
+        
         private void onUndoButtonPressed(object sender, RoutedEventArgs e)
         {
             ((RichTextBox)this._lastTabItem.Content).Undo();
